@@ -12,7 +12,7 @@
 ;; Hobnob Exported Functions
 ;;
 
-(defun start-server (&key (port 3000))
+(defun start-server (&key (port +port+))
   "Start the Hobnob server. This primarily starts the hunchetoot webserver,
 and serves pages that are needed for the hobnob application.
 
