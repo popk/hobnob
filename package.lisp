@@ -10,4 +10,5 @@
 	   :packet->sequence
 	   :make-protocol-parameters
 	   :send-message-to-server
+	   :ping-server
 	   :+COAP-DEFAULT-PORT+))
