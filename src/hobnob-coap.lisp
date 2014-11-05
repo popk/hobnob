@@ -45,7 +45,7 @@
 (defconstant +COAP-DEFAULT-PORT+ 5683)
 
 (defstruct packet-header
-  "The CoAP Packet Header."
+  "The CoAP Packet Header"
   (version +COAP-VERSION-1+ :read-only t :type (unsigned-byte 2))
   (type 0 :type (unsigned-byte 2))
   (token-length 0 :type (unsigned-byte 4))
@@ -58,23 +58,38 @@
 (defun packet->sequence (packet)
   (if (not (typep packet 'packet-header))
       nil
-      (let ((v-t-t (get-v-t-t packet))
+      (let ((v-t-t (v-t-t->sequence packet))
 	    (seq (make-array 4 :element-type '(unsigned-byte 8))))
-	(multiple-value-bind (message-id-1 message-id-2) (split-message-id packet)
+	(multiple-value-bind (message-id-1 message-id-2) (message-id->sequence packet)
 	  (setf (aref seq 0) v-t-t)
 	  (setf (aref seq 1) (packet-header-code packet))
 	  (setf (aref seq 2) message-id-2)
 	  (setf (aref seq 3) message-id-1))
 	seq)))
 
-(defun get-v-t-t (packet)
+(defun sequence->packet (seq)
+  (if (not (typep seq 'sequence))
+      nil
+      (let ((byte-0 (elt seq 0)))
+	(make-packet-header :version (ldb (byte 2 6) byte-0)
+			    :type (ldb (byte 2 4) byte-0)
+			    :token-length (ldb (byte 4 0) byte-0)
+			    :code (elt seq 1)
+			    :message-id (bytes->message-id 
+					 (elt seq 2) 
+					 (elt seq 3))))))
+
+(defun v-t-t->sequence (packet)
   (logior (logior (ash (packet-header-version packet) 6)
 		  (ash (packet-header-type packet) 4))
 	  (ldb (byte 4 0) (packet-header-token-length packet))))
 
-(defun split-message-id (packet)
+(defun message-id->sequence (packet)
   (values (ldb (byte 8 8) (packet-header-message-id packet))
 	  (logand #xff00 (packet-header-message-id packet))))
+
+(defun bytes->message-id (byte-0 byte-1)
+  (logior (ash byte-0 #x8) byte-1))
 
 (defstruct protocol-parameters
   "The CoAP Protocol Transmission Parameters"
