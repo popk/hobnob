@@ -56,6 +56,7 @@
   (token 0 :type (unsigned-byte 64)))
 
 (defun packet->sequence (packet)
+  "Convert a CoAP packet structure into a sequence of bytes"
   (if (not (typep packet 'packet-header))
       nil
       (let ((v-t-t (v-t-t->sequence packet))
@@ -68,6 +69,7 @@
 	seq)))
 
 (defun sequence->packet (seq)
+  "Convert a sequence of bytes into a CoAP packet structure"
   (if (not (typep seq 'sequence))
       nil
       (let ((byte-0 (elt seq 0)))
@@ -75,20 +77,23 @@
 			    :type (ldb (byte 2 4) byte-0)
 			    :token-length (ldb (byte 4 0) byte-0)
 			    :code (elt seq 1)
-			    :message-id (bytes->message-id 
+			    :message-id (sequence->message-id 
 					 (elt seq 2) 
 					 (elt seq 3))))))
 
 (defun v-t-t->sequence (packet)
+  "Helper function to convert version/type/token-length to bytes"
   (logior (logior (ash (packet-header-version packet) 6)
 		  (ash (packet-header-type packet) 4))
 	  (ldb (byte 4 0) (packet-header-token-length packet))))
 
 (defun message-id->sequence (packet)
+  "Helper function to convert message-id to bytes"
   (values (ldb (byte 8 8) (packet-header-message-id packet))
 	  (logand #xff00 (packet-header-message-id packet))))
 
-(defun bytes->message-id (byte-0 byte-1)
+(defun sequence->message-id (byte-0 byte-1)
+  "Helper function to convert a sequence of bytes to a message-id"
   (logior (ash byte-0 #x8) byte-1))
 
 (defstruct protocol-parameters

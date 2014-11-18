@@ -4,6 +4,7 @@
 
 ;;; "hobnob" goes here. Hacks and glory await!
 
+;;; Default port on which the webserver listens
 (defconstant +port+ 3000)
 (defvar *server* nil)
 
@@ -92,9 +93,13 @@ different scenarios. The goal of hobnob is to support the following protocols")
 
 
 (defmacro html-comment (c)
+  "cl-who does not have a mechanism to generate HTML comments.
+Implement a macro to insert HTML comments <!-- -->."
   `(cl-who:str (format t "~%<!-- ~A -->" ,c)))
 
 (defun html-head (the-title)
+  "Insert a Hobnob specific HTML <head>. We use Bootstrap for
+responsiveness. Link to the same via CDN."
   (cl-who:with-html-output (*standard-output* nil :indent t)
       (:head
        (:meta :charset "utf-8")
@@ -114,7 +119,7 @@ different scenarios. The goal of hobnob is to support the following protocols")
 	:href "/styles.css"))))
 
 (defun html-navbar ()
-  "Generate a Bootstrap Navbar
+  "Generate a Bootstrap Navbar for Hobnob.
 "
   (cl-who:with-html-output (*standard-output* nil :indent t)
     (:div :class "navbar navbar-inverse navbar-fixed-top" :role "navigation"
@@ -138,12 +143,14 @@ different scenarios. The goal of hobnob is to support the following protocols")
 
 
 (defun html-js-scripts ()
+  "Include JQuery and Bootstrap JS libraries"
   (cl-who:with-html-output (*standard-output* nil :indent t)
     (:script :src "https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js")
     (:script
      :src "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")))
 
 (defun get-css ()
+  "Generate the inline CSS."
   (css-lite:css 
     (("body") (:margin "40px 0 0 0"))))
 
